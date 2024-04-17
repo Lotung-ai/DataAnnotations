@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using P3AddNewFunctionalityDotNetCore.Data;
 using P3AddNewFunctionalityDotNetCore.Models.Entities;
 using System.Linq;
+using System.ComponentModel.DataAnnotations;
 
 namespace P3AddNewFunctionalityDotNetCore.Tests
 {
@@ -20,197 +21,164 @@ namespace P3AddNewFunctionalityDotNetCore.Tests
         /// </summary>
 
         [Fact]
-        public void ProductNameNullTest()
+        public void Name_Required()
         {
             // Arrange
-            Mock<ICart> mockCart = new Mock<ICart>();
-            Mock<IProductRepository> mockProductRepository = new Mock<IProductRepository>();
-            Mock<IOrderRepository> mockOrderRepository = new Mock<IOrderRepository>();
-            Mock<IStringLocalizer<ProductService>> mockLocalizer = new Mock<IStringLocalizer<ProductService>>();
+            var mockCart = new Mock<ICart>();
+            var mockProductRepository = new Mock<IProductRepository>();
+            var mockOrderRepository = new Mock<IOrderRepository>();
+            var mockLocalizer = new Mock<IStringLocalizer<ProductService>>();
 
-            ProductService productService = new ProductService(mockCart.Object, mockProductRepository.Object, mockOrderRepository.Object, mockLocalizer.Object);
+            var productService = new ProductService(mockCart.Object, mockProductRepository.Object, mockOrderRepository.Object, mockLocalizer.Object);
 
-            ProductViewModel productNameNull = new ProductViewModel { Id = 1, Name = null, Price = 10.99.ToString(), Stock = 50.ToString() };
-            ProductViewModel product = new ProductViewModel { Id = 2, Name = "Product 2", Price = 20.99.ToString(), Stock = 20.ToString() };
-            mockLocalizer.Setup(m => m["MissingName"]).Returns(new LocalizedString("MissingName", "Missing name error message"));
+            var product = new ProductViewModel { Id = 1, Name = null, Price = 10.ToString(), Stock = 50.ToString() };
 
             // Act
-            List<string> resultNameNull = productService.CheckProductModelErrors(productNameNull);
-            List<string> result = productService.CheckProductModelErrors(product);
+            var modelErrors = productService.CheckProductModelErrors(product);
 
             // Assert
-            Assert.Empty(result);
-            Assert.NotEmpty(resultNameNull);
-            Assert.Contains("Missing name error message", resultNameNull);
+            Assert.Contains("Veuillez saisir un nom", modelErrors);
         }
 
         /// <summary>
         /// Test if Product Price is Decimal
         /// </summary>
         [Fact]
-        public void ProductPriceNullTest()
+        public void Price_Required()
         {
             // Arrange
-            Mock<ICart> mockCart = new Mock<ICart>();
-            Mock<IProductRepository> mockProductRepository = new Mock<IProductRepository>();
-            Mock<IOrderRepository> mockOrderRepository = new Mock<IOrderRepository>();
-            Mock<IStringLocalizer<ProductService>> mockLocalizer = new Mock<IStringLocalizer<ProductService>>();
+            var mockCart = new Mock<ICart>();
+            var mockProductRepository = new Mock<IProductRepository>();
+            var mockOrderRepository = new Mock<IOrderRepository>();
+            var mockLocalizer = new Mock<IStringLocalizer<ProductService>>();
 
-            ProductService productService = new ProductService(mockCart.Object, mockProductRepository.Object, mockOrderRepository.Object, mockLocalizer.Object);
+            var productService = new ProductService(mockCart.Object, mockProductRepository.Object, mockOrderRepository.Object, mockLocalizer.Object);
 
-            ProductViewModel productPriceNull = new ProductViewModel { Id = 1, Name = "Product 1", Price = null, Stock = 50.ToString() };
-            ProductViewModel product = new ProductViewModel { Id = 2, Name = "Product 2", Price = 20.99.ToString(), Stock = 20.ToString() };
-            mockLocalizer.Setup(m => m["MissingPrice"]).Returns(new LocalizedString("MissingPrice", "Missing price error message"));
+            var product = new ProductViewModel { Id = 1, Name = "Product 1", Price = null, Stock = 50.ToString() };
 
             // Act
-            List<string> resultPrioceNull = productService.CheckProductModelErrors(productPriceNull);
-            List<string> result = productService.CheckProductModelErrors(product);
+            var modelErrors = productService.CheckProductModelErrors(product);
 
             // Assert
-            Assert.Empty(result);
-            Assert.NotEmpty(resultPrioceNull);
-            Assert.Contains("Missing price error message", resultPrioceNull);
+            Assert.Contains("Veuillez saisir un prix", modelErrors);
         }
+
         /// <summary>
         /// Test if Product Priceis Double type
         /// </summary>
         [Fact]
-        public void ProductPriceIsNotDoubleTypeTest()
+        public void Price_RegularExpression()
         {
             // Arrange
-            Mock<ICart> mockCart = new Mock<ICart>();
-            Mock<IProductRepository> mockProductRepository = new Mock<IProductRepository>();
-            Mock<IOrderRepository> mockOrderRepository = new Mock<IOrderRepository>();
-            Mock<IStringLocalizer<ProductService>> mockLocalizer = new Mock<IStringLocalizer<ProductService>>();
+            var mockCart = new Mock<ICart>();
+            var mockProductRepository = new Mock<IProductRepository>();
+            var mockOrderRepository = new Mock<IOrderRepository>();
+            var mockLocalizer = new Mock<IStringLocalizer<ProductService>>();
 
-            ProductService productService = new ProductService(mockCart.Object, mockProductRepository.Object, mockOrderRepository.Object, mockLocalizer.Object);
+            var productService = new ProductService(mockCart.Object, mockProductRepository.Object, mockOrderRepository.Object, mockLocalizer.Object);
 
-            ProductViewModel productPriceIsNotDoubleType = new ProductViewModel { Id = 1, Name = "Product 1", Price = "NotNumber", Stock = 50.ToString() };
-            ProductViewModel product = new ProductViewModel { Id = 2, Name = "Product 2", Price = 20.99.ToString(), Stock = 20.ToString() };
-            mockLocalizer.Setup(m => m["PriceNotANumber"]).Returns(new LocalizedString("PriceNotANumber", "Price is not a number error message"));
+            var product = new ProductViewModel { Id = 1, Name = "Product 1", Price = "Price", Stock = 50.ToString() };
 
             // Act
-            List<string> resultPrioceIsNotDoubleType = productService.CheckProductModelErrors(productPriceIsNotDoubleType);
-            List<string> result = productService.CheckProductModelErrors(product);
+            var modelErrors = productService.CheckProductModelErrors(product);
 
             // Assert
-            Assert.Empty(result);
-            Assert.NotEmpty(resultPrioceIsNotDoubleType);
-            Assert.Contains("Price is not a number error message", resultPrioceIsNotDoubleType);
+            Assert.Contains("La valeur saisie pour le prix doit être un nombre", modelErrors);
         }
 
         /// <summary>
         /// Test if Product Price > 0
         /// </summary>
         [Fact]
-        public void ProductPriceIsNotPositiveTest()
+        public void Price_Range()
         {
             // Arrange
-            Mock<ICart> mockCart = new Mock<ICart>();
-            Mock<IProductRepository> mockProductRepository = new Mock<IProductRepository>();
-            Mock<IOrderRepository> mockOrderRepository = new Mock<IOrderRepository>();
-            Mock<IStringLocalizer<ProductService>> mockLocalizer = new Mock<IStringLocalizer<ProductService>>();
+            var mockCart = new Mock<ICart>();
+            var mockProductRepository = new Mock<IProductRepository>();
+            var mockOrderRepository = new Mock<IOrderRepository>();
+            var mockLocalizer = new Mock<IStringLocalizer<ProductService>>();
+            var priceNeg = -10;
+            var productService = new ProductService(mockCart.Object, mockProductRepository.Object, mockOrderRepository.Object, mockLocalizer.Object);
 
-            ProductService productService = new ProductService(mockCart.Object, mockProductRepository.Object, mockOrderRepository.Object, mockLocalizer.Object);
-
-            ProductViewModel productPriceIsNotPositive = new ProductViewModel { Id = 1, Name = "Product 1", Price = (-10).ToString(), Stock = 50.ToString() };
-            ProductViewModel product = new ProductViewModel { Id = 2, Name = "Product 2", Price = 20.99.ToString(), Stock = 20.ToString() };
-            mockLocalizer.Setup(m => m["PriceNotGreaterThanZero"]).Returns(new LocalizedString("PriceNotGreaterThanZero", "Price is not positive error message"));
+            var product = new ProductViewModel { Id = 1, Name = "Product 1", Price = priceNeg.ToString(), Stock = 50.ToString() };
 
             // Act
-            List<string> resultPriceIsNotPositive = productService.CheckProductModelErrors(productPriceIsNotPositive);
-            List<string> result = productService.CheckProductModelErrors(product);
+            var modelErrors = productService.CheckProductModelErrors(product);
 
             // Assert
-            Assert.Empty(result);
-            Assert.NotEmpty(resultPriceIsNotPositive);
-            Assert.Contains("Price is not positive error message", resultPriceIsNotPositive);
+            Assert.Contains("La prix doit être supérieur à zéro", modelErrors);
         }
 
         /// <summary>
         /// Test if Product.Quantity is not null
         /// </summary>
         [Fact]
-        public void ProductQuantityNullTest()
+        public void Stock_Required()
         {
             // Arrange
-            Mock<ICart> mockCart = new Mock<ICart>();
-            Mock<IProductRepository> mockProductRepository = new Mock<IProductRepository>();
-            Mock<IOrderRepository> mockOrderRepository = new Mock<IOrderRepository>();
-            Mock<IStringLocalizer<ProductService>> mockLocalizer = new Mock<IStringLocalizer<ProductService>>();
+            var mockCart = new Mock<ICart>();
+            var mockProductRepository = new Mock<IProductRepository>();
+            var mockOrderRepository = new Mock<IOrderRepository>();
+            var mockLocalizer = new Mock<IStringLocalizer<ProductService>>();
 
-            ProductService productService = new ProductService(mockCart.Object, mockProductRepository.Object, mockOrderRepository.Object, mockLocalizer.Object);
+            var productService = new ProductService(mockCart.Object, mockProductRepository.Object, mockOrderRepository.Object, mockLocalizer.Object);
 
-            ProductViewModel productQuantityNull = new ProductViewModel { Id = 1, Name = "Product 1", Price = 10.99.ToString(), Stock = null };
-            ProductViewModel product = new ProductViewModel { Id = 2, Name = "Product 2", Price = 20.99.ToString(), Stock = 20.ToString() };
-            mockLocalizer.Setup(m => m["MissingQuantity"]).Returns(new LocalizedString("MissingQuantity", "Missing quantity error message"));
+            var product = new ProductViewModel { Id = 1, Name = "Product 1", Price = 10.ToString(), Stock = null };
 
             // Act
-            List<string> resultQuantityNull = productService.CheckProductModelErrors(productQuantityNull);
-            List<string> result = productService.CheckProductModelErrors(product);
+            var modelErrors = productService.CheckProductModelErrors(product);
 
             // Assert
-            Assert.Empty(result);
-            Assert.NotEmpty(resultQuantityNull);
-            Assert.Contains("Missing quantity error message", resultQuantityNull);
+            Assert.Contains("Veuillez saisir un stock", modelErrors);
         }
 
         /// <summary>
         /// Test if Product.Quantity is Integer
         /// </summary>
         [Fact]
-        public void ProductQuantityIsNotIntegerTest()
+        public void Stock_RegularExpression()
         {
             // Arrange
-            Mock<ICart> mockCart = new Mock<ICart>();
-            Mock<IProductRepository> mockProductRepository = new Mock<IProductRepository>();
-            Mock<IOrderRepository> mockOrderRepository = new Mock<IOrderRepository>();
-            Mock<IStringLocalizer<ProductService>> mockLocalizer = new Mock<IStringLocalizer<ProductService>>();
+            var mockCart = new Mock<ICart>();
+            var mockProductRepository = new Mock<IProductRepository>();
+            var mockOrderRepository = new Mock<IOrderRepository>();
+            var mockLocalizer = new Mock<IStringLocalizer<ProductService>>();
 
-            ProductService productService = new ProductService(mockCart.Object, mockProductRepository.Object, mockOrderRepository.Object, mockLocalizer.Object);
+            var productService = new ProductService(mockCart.Object, mockProductRepository.Object, mockOrderRepository.Object, mockLocalizer.Object);
 
-            ProductViewModel productQuantityIsNotInteger = new ProductViewModel { Id = 1, Name = "Product 1", Price = 10.99.ToString(), Stock = 1.5.ToString() };
-            ProductViewModel product = new ProductViewModel { Id = 2, Name = "Product 2", Price = 20.99.ToString(), Stock = 20.ToString() };
-            mockLocalizer.Setup(m => m["StockNotAnInteger"]).Returns(new LocalizedString("StockNotAnInteger", "Stock is not an integer error message"));
+            var product = new ProductViewModel { Id = 1, Name = "Product 1", Price = 10.ToString(), Stock = "Stock" };
 
             // Act
-            List<string> resultQuantityIsNotInteger = productService.CheckProductModelErrors(productQuantityIsNotInteger);
-            List<string> result = productService.CheckProductModelErrors(product);
+            var modelErrors = productService.CheckProductModelErrors(product);
 
             // Assert
-            Assert.Empty(result);
-            Assert.NotEmpty(resultQuantityIsNotInteger);
-            Assert.Contains("Stock is not an integer error message", resultQuantityIsNotInteger);
+            Assert.Contains("La valeur saisie pour le stock doit être un entier", modelErrors);
         }
 
         /// <summary>
         /// Test if Product.Quantity > 0
         /// </summary>
         [Fact]
-        public void ProductQuantityIsNotPositiveTest()
+        public void Stock_Range()
         {
             // Arrange
-            Mock<ICart> mockCart = new Mock<ICart>();
-            Mock<IProductRepository> mockProductRepository = new Mock<IProductRepository>();
-            Mock<IOrderRepository> mockOrderRepository = new Mock<IOrderRepository>();
-            Mock<IStringLocalizer<ProductService>> mockLocalizer = new Mock<IStringLocalizer<ProductService>>();
+            var mockCart = new Mock<ICart>();
+            var mockProductRepository = new Mock<IProductRepository>();
+            var mockOrderRepository = new Mock<IOrderRepository>();
+            var mockLocalizer = new Mock<IStringLocalizer<ProductService>>();
+            var stock = -50;
 
-            ProductService productService = new ProductService(mockCart.Object, mockProductRepository.Object, mockOrderRepository.Object, mockLocalizer.Object);
+            var productService = new ProductService(mockCart.Object, mockProductRepository.Object, mockOrderRepository.Object, mockLocalizer.Object);
 
-            ProductViewModel productQuantityIsNotPositive = new ProductViewModel { Id = 1, Name = "Product 1", Price = 10.99.ToString(), Stock = (-15).ToString() };
-            ProductViewModel product = new ProductViewModel { Id = 2, Name = "Product 2", Price = 20.99.ToString(), Stock = 20.ToString() };
-            mockLocalizer.Setup(m => m["StockNotGreaterThanZero"]).Returns(new LocalizedString("StockNotGreaterThanZero", "Stock is not positive error message"));
+            var product = new ProductViewModel { Id = 1, Name = "Product 1", Price = 10.ToString(), Stock = stock.ToString() };
 
             // Act
-            List<string> resultQuantityIsNotPositive = productService.CheckProductModelErrors(productQuantityIsNotPositive);
-            List<string> result = productService.CheckProductModelErrors(product);
+            var modelErrors = productService.CheckProductModelErrors(product);
 
             // Assert
-            Assert.Empty(result);
-            Assert.NotEmpty(resultQuantityIsNotPositive);
-            Assert.Contains("Stock is not positive error message", resultQuantityIsNotPositive);
-
+            Assert.Contains("La stock doit être supérieure à zéro", modelErrors);
         }
+
         /// <summary>
         /// Verify if the product is adding in the inventory
         /// </summary>
