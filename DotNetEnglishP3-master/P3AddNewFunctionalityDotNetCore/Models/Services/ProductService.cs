@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -94,39 +95,23 @@ namespace P3AddNewFunctionalityDotNetCore.Models.Services
         public List<string> CheckProductModelErrors(ProductViewModel product)
         {
             List<string> modelErrors = new List<string>();
-            if (product.Name == null || string.IsNullOrWhiteSpace(product.Name))
-            {
-                modelErrors.Add(_localizer["MissingName"]);
-            }
 
-            if (product.Price == null || string.IsNullOrWhiteSpace(product.Price))
-            {
-                modelErrors.Add(_localizer["MissingPrice"]);
-            }
+            //ValidationContext for validation
+            var validationContext = new ValidationContext(product);
 
-            if (!Double.TryParse(product.Price, out double pc))
-            {
-                modelErrors.Add(_localizer["PriceNotANumber"]);
-            }
-            else
-            {
-                if (pc <= 0)
-                    modelErrors.Add(_localizer["PriceNotGreaterThanZero"]);
-            }
+            // Stock results this validation
+            var validationResults = new List<ValidationResult>();
 
-            if (product.Stock == null || string.IsNullOrWhiteSpace(product.Stock))
-            {
-                modelErrors.Add(_localizer["MissingQuantity"]);
-            }
+            // Check model is valid
+            bool isValid = Validator.TryValidateObject(product, validationContext, validationResults, true);
 
-            if (!int.TryParse(product.Stock, out int qt))
+            // else add in the errors in the modelErrors
+            if (!isValid)
             {
-                modelErrors.Add(_localizer["StockNotAnInteger"]);
-            }
-            else
-            {
-                if (qt <= 0)
-                    modelErrors.Add(_localizer["StockNotGreaterThanZero"]);
+                foreach (var validationResult in validationResults)
+                {
+                    modelErrors.Add(validationResult.ErrorMessage);
+                }
             }
 
             return modelErrors;
